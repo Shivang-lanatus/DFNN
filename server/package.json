@@ -15,8 +15,10 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "concurrently": "^9.1.2",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "nodemon": "^3.1.10"
   },

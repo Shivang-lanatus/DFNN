@@ -1,20 +1,29 @@
 import { DataGrid } from '@mui/x-data-grid';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from'react';
 
-export const HomeScreen = () => {
-
+export const ListEvents = () => {
+    const [events, setEvents] = useState([]);
     const navigate = useNavigate();
+
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch('http://localhost:3000/api/v1/data/events');
+          const data = await response.json();
+          setEvents(data.data);
+        } catch (error) {
+          console.error('Error fetching events:', error);
+        }
+      };
+    
+      fetchData();
+    }, []);
 
     const columns = [
       { field: 'id', headerName: 'Launch', width: 70 },
       { field: 'Proximity', headerName: 'Proximity', width: 200 },
       { field: 'location', headerName: 'Location', width: 150 },
-    ];
-  
-    //from API response we can use map() and set data in id, proximity like fields...
-    const rows = [
-      { id: 1, Proximity: 'Concert', location: 'NYC' },
-      { id: 2, Proximity: 'Conference', location: 'LA' },
     ];
   
     const handleRowClick = (params) => {
@@ -24,7 +33,7 @@ export const HomeScreen = () => {
     return(
         <div style={{ padding: '2rem' }}>
             <DataGrid
-              rows={rows}
+              rows={events}
               columns={columns}
               initialState={{
                 pagination: {

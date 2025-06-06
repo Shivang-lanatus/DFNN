@@ -1,13 +1,29 @@
 import { useParams } from 'react-router-dom';
 import { DataGrid } from '@mui/x-data-grid';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export const EventDetails = () => {
-    const { eventName } = useParams();
+    const { id, eventName } = useParams();
     const decodedEventName = decodeURIComponent(eventName);
     const [selectedCOA, setSelectedCOA] = useState('Assess');
     const [showCOAOptions, setShowCOAOptions] = useState(false);
+    const [eventDetails, setEventDetails] = useState([]);
     
+    useEffect(() => {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(`http://localhost:3000/api/v1/data/events/${id}/events/${decodedEventName}`);
+          const data = await response.json();
+          setEventDetails(data.data);
+          console.log(data.data);
+        } catch (error) {
+          console.error('Error fetching Launch events:', error);
+        }
+      };
+    
+      fetchData();
+    }, []);
+
     const COA_OPTIONS = [
       'Do Nothing',
       'Attribute',
@@ -68,30 +84,7 @@ export const EventDetails = () => {
         cursor: 'pointer',
       },
     };
-    
-    const eventsData = [
-        {
-            eventName: 'Pre-Launch Meeting',
-            launchSite: 'Balkonur, RUS',
-            surpriseLaunch: 'Yes',
-            eventTime: '25-12-25',
-            blueObjs: 'AMER-123',
-            redObjs: 'Rocket Booster',
-            periodOfInterest: 'POI Timestamp1-timestamp2'
-        },
-        {
-            eventName: 'Domestic Launch',
-            launchSite: 'Cape Canaveral, USA',
-            surpriseLaunch: 'No',
-            eventTime: '30-12-25',
-            blueObjs: 'AMER-456',
-            redObjs: 'Satellite',
-            periodOfInterest: 'POI Timestamp3-timestamp4'
-        }
-    ];
-    
-    const eventData = eventsData.find(event => event.eventName === decodedEventName) || eventsData[1];
-    
+        
     const columns = [
         { field: 'eventName', headerName: 'Event Name', width: 150 },
         { field: 'launchSite', headerName: 'Launch Site', width: 150 },
@@ -125,9 +118,7 @@ export const EventDetails = () => {
         },
         { field: 'periodOfInterest', headerName: 'Period of Interest', width: 300 },
     ];
-    
-    const rows = [eventData];
-    
+            
     // Handle COA change
     const handleChangeCOA = () => {
         setShowCOAOptions((prev) => !prev);
@@ -152,8 +143,8 @@ export const EventDetails = () => {
             
             {/* Event details table */}
             <div style={{ height: 'auto', width: '100%', marginBottom: '20px' }}>
-                <DataGrid
-                    rows={rows}
+               {eventDetails ? <DataGrid
+                    rows={Array.isArray(eventDetails) ? eventDetails : [eventDetails]}
                     columns={columns}
                     getRowId={(row) => row.eventName}
                     hideFooter={true}
@@ -161,7 +152,19 @@ export const EventDetails = () => {
                     disableColumnFilter
                     disableColumnSelector
                     disableRowSelectionOnClick
-                />
+                /> : (
+                  <div
+                    style={{
+                      padding: '20px',
+                      backgroundColor: '#ffdddd',
+                      color: '#d8000c',
+                      border: '1px solid #d8000c',
+                      borderRadius: '5px',
+                    }}
+                  >
+                    No event data found for this ID and name.
+                  </div>
+                )}
             </div>
             
             {/* Response recommendation and action buttons */}
@@ -214,7 +217,6 @@ export const EventDetails = () => {
                     <div key={option} style={coaOptionStyles.item}>
                       <input
                         type="checkbox"
-                        id={option.replace(/\s/g, '')}
                         checked={selectedCOA === option}
                         onChange={() => {
                           setSelectedCOA(option);
@@ -223,7 +225,6 @@ export const EventDetails = () => {
                         style={coaOptionStyles.checkbox}
                       />
                       <label
-                        htmlFor={option.replace(/\s/g, '')}
                         style={coaOptionStyles.label(option)}
                       >
                         {option}
